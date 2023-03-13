@@ -1,9 +1,9 @@
 # \[Group name\]
 
 **Group members:**
-- A
-- B
-- C
+- Albert Lenz Bærentsen
+- Lærke Dyrby Kloch
+- Katja Milvang-Jensen
 
 This repository contains  
 1. Inaugural project. 
