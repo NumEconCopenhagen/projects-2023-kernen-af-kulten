@@ -16,11 +16,13 @@ class HouseholdSpecializationModelClass:
         par = self.par = SimpleNamespace()
         sol = self.sol = SimpleNamespace()
 
+        #eksistererer i dictionary par 
         # b. preferences
-        par.rho = 2.0
+        par.rho = 2.0 
         par.nu = 0.001
         par.epsilon = 1.0
-        par.omega = 0.5 
+        par.omega = 0.5
+       
 
         # c. household production
         par.alpha = 0.5
@@ -35,6 +37,7 @@ class HouseholdSpecializationModelClass:
         par.beta0_target = 0.4
         par.beta1_target = -0.1
 
+        #eksisterer i dictionary sol
         # f. solution
         sol.LM_vec = np.zeros(par.wF_vec.size)
         sol.HM_vec = np.zeros(par.wF_vec.size)
@@ -47,8 +50,8 @@ class HouseholdSpecializationModelClass:
     def calc_utility(self,LM,HM,LF,HF):
         """ calculate utility """
 
-        par = self.par
-        sol = self.sol
+        par = self.par #siger at par er lig den par fra tidligere
+        sol = self.sol #siger at sol er lig den sol fra tidligere
 
         # a. consumption of market goods
         C = par.wM*LM + par.wF*LF
@@ -67,6 +70,7 @@ class HouseholdSpecializationModelClass:
         disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
         
         return utility - disutility
+    #finder nettonytten
 
     def solve_discrete(self,do_print=False):
         """ solve model discretely """
@@ -96,8 +100,9 @@ class HouseholdSpecializationModelClass:
         
         opt.LM = LM[j]
         opt.HM = HM[j]
-        opt.LF = LF[j]
+        #opt.LF = LF[j]
         opt.HF = HF[j]
+        opt.ratio = opt.HF/opt.HM
 
         # e. print
         if do_print:
