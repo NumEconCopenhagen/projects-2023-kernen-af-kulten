@@ -115,14 +115,58 @@ class HouseholdSpecializationModelClass:
 
     def solve(self,do_print=False):
         """ solve model continously """
+        par = self.par
+        sol = self.sol
+        opt = SimpleNamespace()
 
-        pass
+        # a. Sets the start guesses at the optimal for the discrete optimization
+        LM_guess=[4.5]
+        LF_guess=[4.5]
+        HM_guess=[4.5]
+        HF_guess=[4.5]
+
+
+        # b. calculate utility (negative as we want to maximize)
+        def objective_function(x):
+            LM, HM, LF, HF = x
+            if LM + HM > 24 or LF + HF > 24:
+                return -np.inf
+            return -self.calc_utility(LM, HM, LF, HF)
+
+        # d. find maximizing argument
+        res = optimize.minimize(objective_function, [LM_guess, HM_guess, LF_guess, HF_guess], method="Nelder-Mead")
+
+        if not res.success:
+            print("Optimization failed.")
+
+        opt.LM = res.x[0]
+        opt.HM = res.x[1]
+        opt.LF = res.x[2]
+        opt.HF = res.x[3]
+        opt.ratio = opt.HF / opt.HM
+
+         # e. print
+        if do_print:
+            for k, v in opt.__dict__.items():
+                print(f"{k} = {v:6.4f}")
+
+        return opt
+       
 
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
-
-        pass
+        par = self.par
+        sol = self.sol
+        #Creates the wF vector needed
+        par.wF_vec = [0.8, 0.9, 1.0, 1.1, 1.2]
+        
+        # Calculates the HF and HM for each of the wF values and saves the results in the sol. vectors
+        for j, wage in enumerate(par.wF_vec):
+            par.wF = wage
+            model_solution=self.solve()
+            sol.HF_vec[j]=model_solution.HF
+            sol.HM_vec[j]=model_solution.HM
 
     def run_regression(self):
         """ run regression """
@@ -136,6 +180,26 @@ class HouseholdSpecializationModelClass:
         sol.beta0,sol.beta1 = np.linalg.lstsq(A,y,rcond=None)[0]
     
     def estimate(self,alpha=None,sigma=None):
-        """ estimate alpha and sigma """
+        """ minimize error between model results and targets """
 
-        pass
+        par = self.par
+        sol = self.sol
+
+        # a. define error function
+        def error_function(alpha_sigma):
+            alpha, sigma = alpha_sigma.ravel()  # flatten the 2D array
+            par.alpha, par.sigma = alpha, sigma
+            self.solve_wF_vec()
+            self.run_regression()
+            return (par.beta0_target - sol.beta0)**2 + (par.beta1_target - sol.beta1)**2
+
+        # b. find minimizing argument
+        res = optimize.minimize(error_function, [par.alpha, par.sigma], method="Nelder-Mead")
+
+        if not res.success:
+            print("Optimization failed.")
+
+        # d. print results
+        print(f"Optimal alpha: {par.alpha}")
+        print(f"Optimal sigma: {par.sigma}")
+
