@@ -56,8 +56,13 @@ class HouseholdSpecializationModelClass:
         # a. consumption of market goods
         C = par.wM*LM + par.wF*LF
 
-        # b. home production
-        H = HM**(1-par.alpha)*HF**par.alpha
+        # b. home production (fixed by ALB)
+        if par.sigma==0:
+            H=min(HM, HF)
+        elif par.sigma==1:
+            H=HM**(1-par.alpha)*HF**par.alpha
+        else:
+            H=((1-par.alpha)*HM**((par.sigma-1)/par.sigma) + par.alpha*HF**((par.sigma-1)/par.sigma))**(par.sigma/(par.sigma-1))
 
         # c. total consumption utility
         Q = C**par.omega*H**(1-par.omega)
@@ -72,7 +77,7 @@ class HouseholdSpecializationModelClass:
         return utility - disutility
     #finder nettonytten
 
-    def solve_discrete(self,do_print=False):
+    def solve_discrete(self,do_print=False, ratio=False):
         """ solve model discretely """
         
         par = self.par
@@ -103,6 +108,10 @@ class HouseholdSpecializationModelClass:
         #opt.LF = LF[j]
         opt.HF = HF[j]
         opt.ratio = opt.HF/opt.HM
+<<<<<<< HEAD
+=======
+
+>>>>>>> c0f38be76976f0895746690a0fd294c917907181
 
         # e. print
         if do_print:
@@ -114,7 +123,8 @@ class HouseholdSpecializationModelClass:
     def solve(self,do_print=False):
         """ solve model continously """
 
-        pass    
+        pass
+
 
     def solve_wF_vec(self,discrete=False):
         """ solve model for vector of female wages """
