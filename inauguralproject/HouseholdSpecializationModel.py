@@ -1,4 +1,3 @@
-
 from types import SimpleNamespace
 
 import numpy as np
@@ -202,4 +201,3 @@ class HouseholdSpecializationModelClass:
         # d. print results
         print(f"Optimal alpha: {par.alpha}")
         print(f"Optimal sigma: {par.sigma}")
-
