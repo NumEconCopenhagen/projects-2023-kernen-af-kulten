@@ -74,9 +74,6 @@ class HouseholdSpecializationModelClass:
         TM = LM+HM
         TF = LF+HF
         disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
-        #ARARARARH
-        if True:
-            return (utility-disutility)*-1
         return utility - disutility
     #finder nettonytten
 
