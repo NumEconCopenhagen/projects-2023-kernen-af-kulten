@@ -1,4 +1,3 @@
-
 from types import SimpleNamespace
 
 import numpy as np
@@ -16,13 +15,11 @@ class HouseholdSpecializationModelClass:
         par = self.par = SimpleNamespace()
         sol = self.sol = SimpleNamespace()
 
-        #eksistererer i dictionary par 
         # b. preferences
-        par.rho = 2.0 
+        par.rho = 2.0
         par.nu = 0.001
         par.epsilon = 1.0
-        par.omega = 0.5
-       
+        par.omega = 0.5 
 
         # c. household production
         par.alpha = 0.5
@@ -37,7 +34,6 @@ class HouseholdSpecializationModelClass:
         par.beta0_target = 0.4
         par.beta1_target = -0.1
 
-        #eksisterer i dictionary sol
         # f. solution
         sol.LM_vec = np.zeros(par.wF_vec.size)
         sol.HM_vec = np.zeros(par.wF_vec.size)
@@ -47,12 +43,11 @@ class HouseholdSpecializationModelClass:
         sol.beta0 = np.nan
         sol.beta1 = np.nan
 
-    def calc_utility(self,args):
-        LM,HM,LF,HF = args
+    def calc_utility(self,LM,HM,LF,HF):
         """ calculate utility """
 
-        par = self.par #siger at par er lig den par fra tidligere
-        sol = self.sol #siger at sol er lig den sol fra tidligere
+        par = self.par
+        sol = self.sol
 
         # a. consumption of market goods
         C = par.wM*LM + par.wF*LF
@@ -74,11 +69,8 @@ class HouseholdSpecializationModelClass:
         TM = LM+HM
         TF = LF+HF
         disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
-        #ARARARARH
-        if True:
-            return (utility-disutility)*-1
+        
         return utility - disutility
-    #finder nettonytten
 
     def solve_discrete(self,do_print=False, ratio=False):
         """ solve model discretely """
@@ -97,45 +89,7 @@ class HouseholdSpecializationModelClass:
         HF = HF.ravel()
 
         # b. calculate utility
-        u = self.calc_utility([LM,HM,LF,HF])
-    
-        # c. set to minus infinity if constraint is broken
-        I = (LM+HM > 24) | (LF+HF > 24) # | is "or"
-        u[I] = -np.inf
-    
-        # d. find maximizing argument
-        j = np.argmax(u)
-        
-        opt.LM = LM[j]
-        opt.HM = HM[j]
-        #opt.LF = LF[j]
-        opt.HF = HF[j]
-        opt.ratio = opt.HF/opt.HM
-
-        # e. print
-        if do_print:
-            for k,v in opt.__dict__.items():
-                print(f'{k} = {v:6.4f}')
-
-        return opt
-    
-
-
-    def solve(self,do_print=False):
-        """ solve model continously """
-        def constraint1(args):
-            x = args[:4]
-            return x[0] + x[1] - 24
-        def constraint2(args):
-            x = args[:4]
-            return x[2] + x[3] - 24
-        par = self.par
-        sol = self.sol
-        opt = SimpleNamespace()
-        from scipy import optimize
-        x0 = [1, 1, 1, 1]
-        cons = [{'type': 'ineq', 'fun': constraint1},{'type': 'ineq', 'fun': constraint2}]
-        print(optimize.minimize(self.calc_utility, x0, method="SLSQP",constraints=cons))
+        u = self.calc_utility(LM,HM,LF,HF)
     
         # c. set to minus infinity if constraint is broken
         I = (LM+HM > 24) | (LF+HF > 24) # | is "or"
