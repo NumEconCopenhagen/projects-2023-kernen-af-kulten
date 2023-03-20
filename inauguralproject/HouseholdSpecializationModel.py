@@ -44,7 +44,8 @@ class HouseholdSpecializationModelClass:
         sol.beta0 = np.nan
         sol.beta1 = np.nan
 
-    def calc_utility(self,LM,HM,LF,HF):
+    def calc_utility(self,args):
+        LM,HM,LF,HF = args
         """ calculate utility """
 
         par = self.par
@@ -70,7 +71,9 @@ class HouseholdSpecializationModelClass:
         TM = LM+HM
         TF = LF+HF
         disutility = par.nu*(TM**epsilon_/epsilon_+TF**epsilon_/epsilon_)
-        
+        #ARARARARH
+        if True:
+            return (utility-disutility)*-1
         return utility - disutility
 
     def solve_discrete(self,do_print=False, ratio=False):
@@ -90,7 +93,7 @@ class HouseholdSpecializationModelClass:
         HF = HF.ravel()
 
         # b. calculate utility
-        u = self.calc_utility(LM,HM,LF,HF)
+        u = self.calc_utility([LM,HM,LF,HF])
     
         # c. set to minus infinity if constraint is broken
         I = (LM+HM > 24) | (LF+HF > 24) # | is "or"
@@ -112,10 +115,45 @@ class HouseholdSpecializationModelClass:
                 print(f'{k} = {v:6.4f}')
 
         return opt
+    
+
 
     def solve(self,do_print=False):
         """ solve model continously """
+        def constraint1(args):
+            x = args[:4]
+            return x[0] + x[1] - 24
+        def constraint2(args):
+            x = args[:4]
+            return x[2] + x[3] - 24
+        par = self.par
+        sol = self.sol
+        opt = SimpleNamespace()
+        from scipy import optimize
+        x0 = [1, 1, 1, 1]
+        cons = [{'type': 'ineq', 'fun': constraint1},{'type': 'ineq', 'fun': constraint2}]
+        print(optimize.minimize(self.calc_utility, x0, method="SLSQP",constraints=cons))
+    
+        # c. set to minus infinity if constraint is broken
+        I = (LM+HM > 24) | (LF+HF > 24) # | is "or"
+        u[I] = -np.inf
+    
+        # d. find maximizing argument
+        j = np.argmax(u)
+        
+        opt.LM = LM[j]
+        opt.HM = HM[j]
+        opt.LF = LF[j]
+        opt.HF = HF[j]
+        opt.ratio = opt.HF/opt.HM
 
+
+        # e. print
+        if do_print:
+            for k,v in opt.__dict__.items():
+                print(f'{k} = {v:6.4f}')
+
+        return opt
         pass
 
 
