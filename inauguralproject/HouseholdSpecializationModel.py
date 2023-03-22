@@ -51,7 +51,6 @@ class HouseholdSpecializationModelClass:
 
         # a. consumption of market goods
         C = par.wM*LM + par.wF*LF
-
         # b. home production (fixed by ALB)
         if par.sigma==0:
             H=min(HM, HF)
@@ -133,10 +132,11 @@ class HouseholdSpecializationModelClass:
             return -self.calc_utility(LM, HM, LF, HF)
 
         # d. find maximizing argument
-        res = optimize.minimize(objective_function, [LM_guess, HM_guess, LF_guess, HF_guess], method="Nelder-Mead")
 
+        res = optimize.minimize(objective_function, [LM_guess, HM_guess, LF_guess, HF_guess], method="Nelder-Mead")
         if not res.success:
-            print("Optimization failed.")
+            print("Optimization failed - trying new combinations")
+
 
         opt.LM = res.x[0]
         opt.HM = res.x[1]
@@ -166,6 +166,8 @@ class HouseholdSpecializationModelClass:
             model_solution=self.solve()
             sol.HF_vec[j]=model_solution.HF
             sol.HM_vec[j]=model_solution.HM
+            sol.LF_vec[j]=model_solution.LF
+            sol.LM_vec[j]=model_solution.LM
 
     def run_regression(self):
         """ run regression """
@@ -180,24 +182,25 @@ class HouseholdSpecializationModelClass:
     
     def estimate(self,alpha=None,sigma=None):
         """ minimize error between model results and targets """
-
         par = self.par
         sol = self.sol
 
         # a. define error function
         def error_function(alpha_sigma):
-            alpha, sigma = alpha_sigma.ravel()  # flatten the 2D array
-            par.alpha, par.sigma = alpha, sigma
+            par.alpha, par.sigma = alpha_sigma
             self.solve_wF_vec()
             self.run_regression()
             return (par.beta0_target - sol.beta0)**2 + (par.beta1_target - sol.beta1)**2
-
+        bounds = ((0, 1), (-np.inf, np.inf))
         # b. find minimizing argument
-        res = optimize.minimize(error_function, [par.alpha, par.sigma], method="Nelder-Mead")
-
+        res = optimize.minimize(error_function, [par.alpha, par.sigma] ,method="Nelder-Mead", bounds=bounds)
         if not res.success:
             print("Optimization failed.")
-
+        else:
+            print(res)
         # d. print results
         print(f"Optimal alpha: {par.alpha}")
         print(f"Optimal sigma: {par.sigma}")
+        print(f"Params: {self.par}")
+        print(f"Solution: {self.sol}")
+        return self.sol
