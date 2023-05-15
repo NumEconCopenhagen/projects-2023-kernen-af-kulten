@@ -19,7 +19,7 @@ columns_dict['Bnøgle'] = 'unit'
 
 var_dict = {} # var is for variable
 var_dict['N05 Psycholeptica'] = '5'
-var_dict['N06 Psychoanaleptica'] = '6'
+#var_dict['N06 Psychoanaleptica'] = '6'
 
 unit_dict = {}
 unit_dict['Personer'] = 'person'
@@ -380,7 +380,7 @@ def figure_5():
     ax.set_ylabel('Growth rate')
     
     # Set legend
-    ax.legend(title='HFUDD')
+    ax.legend(title='HFUDD', fontsize="5")
     
     # Set title
     ax.set_title('Development in use of psycholeptica by education level')
