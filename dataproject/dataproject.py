@@ -380,7 +380,7 @@ def figure_5():
     ax.set_ylabel('Growth rate')
     
     # Set legend
-    ax.legend(title='HFUDD', fontsize="2")
+    ax.legend(title='HFUDD', prop = { "size": 2 })
     
     # Set title
     ax.set_title('Development in use of psycholeptica by education level')
